@@ -141,7 +141,6 @@ Nebo uprav soubor přímo — `~/.openclaw/openclaw.json` — a nahraď jeho obs
     },
     deny: [
       "gateway",             // agent nesmí měnit vlastní konfiguraci
-      "cron",                // agent nesmí zakládat opakující se úlohy na pozadí
     ],
     // group:runtime, group:fs, group:automation jsou povoleny —
     // VM je izolované prostředí, blast radius je omezen na VM
@@ -239,14 +238,14 @@ Umožňuje agentovi měnit nastavení OpenClaw Gateway za běhu.
 
 #### `cron` — opakující se úlohy na pozadí
 
-Umožňuje agentovi zakládat scheduled joby, které běží i po skončení konverzace.
+Umožňuje agentovi zakládat scheduled joby, které běží i po skončení konverzace. V OpenClaw je cron nativní funkce navržená pro autonomní provoz — právě toto je jeden z klíčových use cases (připomínky, pravidelné reporty, monitoring, ...).
 
 | Nastavení | Co umožňuje | Riziko |
 |-----------|-------------|--------|
-| v `deny` | Žádné background joby | Žádné |
-| povoleno | Agent může naplánovat akce do budoucna | Střední — akce proběhnou bez tvého vědomí |
+| v `deny` | Žádné background joby | Žádné — ale přicházíš o klíčovou funkci |
+| povoleno | Agent může plánovat a spouštět opakující se úlohy | Nízké při rozumném použití |
 
-**Doporučení: `deny`**, pokud explicitně nepotřebuješ cron funkce. Zakládání jobů bez vědomí uživatele je těžko auditovatelné.
+**Doporučení: ponechat povoleno** — cron je součást základního konceptu OpenClaw. Zakázat ho jen pokud máš konkrétní důvod.
 
 ---
 
@@ -273,7 +272,7 @@ Umožňuje agentovi provádět akce vyžadující vyšší oprávnění (sudo, s
 | `group:runtime` | deny | povoleno |
 | `group:automation` | deny | povoleno |
 | `gateway` | **vždy deny** | **vždy deny** |
-| `cron` | **vždy deny** | **vždy deny** |
+| `cron` | **vždy deny** | povoleno |
 | `elevated` | **vždy false** | **vždy false** |
 
 ### Vygeneruj token
