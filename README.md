@@ -28,12 +28,32 @@ Po domácím úkolu (Kroky 4+5) navíc:
 
 ## Příprava před installfestem
 
+### Kde instalovat?
+
+> **Doporučení: dedikovaný virtuální server (VPS nebo lokální VM)**, ne tvůj hlavní počítač.
+
+OpenClaw běží jako daemon s přístupem k shellu, filesystému a síti. Pokud ho nainstaluješ na daily driver, sdílí oprávnění s tvými soubory, SSH klíči, prohlížečem a vším ostatním. V případě kompromitace (prompt injection, škodlivý skill) je blast radius celý tvůj systém.
+
+Na dedikovaném VM:
+- OpenClaw je jediná aplikace — nemá co ohrozit
+- Můžeš povolit více nástrojů (viz Krok 4)
+- V nejhorším případě smažeš VM a začneš znovu
+
+**Možnosti:**
+- **VPS** (DigitalOcean, Hetzner, Linode) — ~3–5 €/měsíc, Ubuntu 22.04/24.04
+- **Lokální VM** (VirtualBox, VMware, QEMU) — zdarma, Ubuntu nebo Debian
+- **WSL2** na Windows — přijatelný kompromis, lepší než nativní Windows install
+
+Pokud přesto instaluješ na hlavní systém: používej přísnější konfiguraci (`exec: deny`, `workspaceOnly: true`) a nikdy nepovoluj `elevated`.
+
+---
+
 Před příchodem si připrav:
 
 - [ ] **API klíč** od Anthropic (claude.ai/settings) nebo OpenAI (platform.openai.com)
 - [ ] **Node.js** — zkontroluj: `node --version` (potřebuješ 22.16+ nebo 24)
 
-> Pro domácí úkol (Kroky 4+5) budeš potřebovat navíc: Telegram účet na mobilu a Tailscale účet (tailscale.com — zdarma).
+> Pro domácí úkol (Kroky 6+7) budeš potřebovat navíc: Telegram účet na mobilu a Tailscale účet (tailscale.com — zdarma).
 
 ### Node.js není nainstalovaný?
 
