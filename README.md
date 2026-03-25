@@ -141,13 +141,13 @@ openclaw configure
 | Nastavení | Lokální systém | Dedikované VM |
 |-----------|-------------|---------------|
 | `exec.security` | `deny` | `ask` |
-| `group:fs` | deny | allow |
+| `group:fs` | `deny` | `allow` |
 | `fs.workspaceOnly` | `true` | `false` |
-| `group:runtime` | deny | allow |
-| `group:automation` | deny | allow |
-| `gateway` | **vždy deny** | **vždy deny** |
-| `cron` | deny (doporučeno) | allow |
-| `elevated` | **vždy false** | **vždy false** |
+| `group:runtime` | `deny` | `allow` |
+| `group:automation` | `deny` | `allow` |
+| `gateway` | **vždy `deny`** | **vždy `deny`** |
+| `cron` | `deny` (doporučeno) | `allow` |
+| `elevated` | **vždy `false`** | **vždy `false`** |
 
 
 
