@@ -162,6 +162,120 @@ Nebo uprav soubor přímo — `~/.openclaw/openclaw.json` — a nahraď jeho obs
 }
 ```
 
+### Co jednotlivé volby znamenají — rozhodni se sám
+
+Každé nastavení je kompromis mezi pohodlností a bezpečností. Níže je vysvětlení, co každá volba umožňuje a co riskuješ.
+
+---
+
+#### `exec.security` — spouštění shell příkazů
+
+Řídí, zda agent smí spouštět příkazy v terminálu (`ls`, `git`, `python script.py`, ...).
+
+| Hodnota | Co umožňuje | Riziko |
+|---------|-------------|--------|
+| `"deny"` | Exec zcela zakázán | Žádné — agent nemůže nic spustit |
+| `"ask"` | Každý příkaz musí potvrdit uživatel | Nízké — ty rozhoduješ o každém příkazu |
+| `"allowlist"` | Spouští jen příkazy ze schváleného seznamu | Střední — záleží na kvalitě allowlistu |
+| `"full"` | Spouští cokoliv bez ptaní | Vysoké — agent má plný shell přístup |
+
+**Doporučení:** `"ask"` je rozumný výchozí bod — agent může být produktivní, ale ty vidíš každý příkaz.
+
+---
+
+#### `group:fs` — přístup k filesystému
+
+Umožňuje agentovi číst a zapisovat soubory.
+
+| Nastavení | Co umožňuje | Riziko |
+|-----------|-------------|--------|
+| v `deny` | Agent nevidí žádné soubory | Žádné |
+| povoleno + `workspaceOnly: true` | Čtení/zápis jen v určeném adresáři | Nízké |
+| povoleno + `workspaceOnly: false` | Přístup k celému filesystému | Střední–vysoké (záleží na prostředí) |
+
+**Na dedikovaném VM:** `workspaceOnly: false` je rozumné — VM je izolované a agent tam má co dělat.  
+**Na daily driveru:** vždy `workspaceOnly: true` nebo úplný `deny` — agent by mohl číst `~/.ssh`, `~/.config`, hesla.
+
+---
+
+#### `group:runtime` — spouštění kódu a interpretů
+
+Umožňuje agentovi spouštět Python, Node.js, skripty apod.
+
+| Nastavení | Co umožňuje | Riziko |
+|-----------|-------------|--------|
+| v `deny` | Agent nemůže spustit žádný interpret | Žádné |
+| povoleno | Agent může psát a spouštět kód | Střední — spuštěný kód může dělat cokoliv |
+
+**Pozor:** `group:runtime` a `exec` spolu úzce souvisí. I když je `exec.security: "ask"`, povolený runtime znamená, že agent může napsat skript a pak tě požádat o jeho spuštění. Vždy kombinuj s `ask`.
+
+---
+
+#### `group:automation` — automatizační akce
+
+Umožňuje agentovi posílat zprávy, ovládat aplikace a provádět akce tvým jménem.
+
+| Nastavení | Co umožňuje | Riziko |
+|-----------|-------------|--------|
+| v `deny` | Žádné automatizované akce | Žádné |
+| povoleno | Agent může posílat zprávy, klikat v UI apod. | Střední — může jednat tvým jménem |
+
+**Typický use case pro povolení:** chceš, aby agent automaticky odpovídal na emaily nebo posílal notifikace.
+
+---
+
+#### `gateway` — změna vlastní konfigurace
+
+Umožňuje agentovi měnit nastavení OpenClaw Gateway za běhu.
+
+| Nastavení | Co umožňuje | Riziko |
+|-----------|-------------|--------|
+| v `deny` | Agent nemůže měnit konfiguraci | Žádné |
+| povoleno | Agent může měnit vlastní pravidla, přidávat kanály, měnit tokeny | **Velmi vysoké** |
+
+**Doporučení: vždy `deny`.** Toto je ekvivalent "agent si může dát admin přístup k sobě samému" — není důvod to povolovat.
+
+---
+
+#### `cron` — opakující se úlohy na pozadí
+
+Umožňuje agentovi zakládat scheduled joby, které běží i po skončení konverzace.
+
+| Nastavení | Co umožňuje | Riziko |
+|-----------|-------------|--------|
+| v `deny` | Žádné background joby | Žádné |
+| povoleno | Agent může naplánovat akce do budoucna | Střední — akce proběhnou bez tvého vědomí |
+
+**Doporučení: `deny`**, pokud explicitně nepotřebuješ cron funkce. Zakládání jobů bez vědomí uživatele je těžko auditovatelné.
+
+---
+
+#### `elevated` — oprávnění nad rámec uživatele
+
+Umožňuje agentovi provádět akce vyžadující vyšší oprávnění (sudo, systémové změny, přístup k hardwaru).
+
+| Nastavení | Co umožňuje | Riziko |
+|-----------|-------------|--------|
+| `false` | Žádná elevated oprávnění | Žádné |
+| `true` | Agent může provádět systémové změny | **Velmi vysoké** |
+
+**Doporučení: vždy `false`.** Ani na dedikovaném VM není důvod dávat agentovi sudo přístup.
+
+---
+
+#### Přehled: denní driver vs. dedikované VM
+
+| Nastavení | Daily driver | Dedikované VM |
+|-----------|-------------|---------------|
+| `exec.security` | `deny` | `ask` |
+| `group:fs` | deny | povoleno |
+| `fs.workspaceOnly` | `true` | `false` |
+| `group:runtime` | deny | povoleno |
+| `group:automation` | deny | povoleno |
+| `gateway` | **vždy deny** | **vždy deny** |
+| `cron` | **vždy deny** | **vždy deny** |
+| `elevated` | **vždy false** | **vždy false** |
+
 ### Vygeneruj token
 
 ```bash
