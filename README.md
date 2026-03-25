@@ -120,7 +120,7 @@ Nebo uprav soubor přímo — `~/.openclaw/openclaw.json` — a nahraď jeho obs
 
 ```json5
 {
-  // Základní hardened konfigurace
+  // Konfigurace pro dedikované VM (OpenClaw je jediná aplikace)
   gateway: {
     mode: "local",
     bind: "loopback",        // poslouchá POUZE na 127.0.0.1
@@ -136,21 +136,20 @@ Nebo uprav soubor přímo — `~/.openclaw/openclaw.json` — a nahraď jeho obs
 
   tools: {
     exec: {
-      security: "deny",    // shell příkazy = zakázáno
-      ask: "always",       // každý příkaz musí být schválen ručně
+      security: "ask",       // shell příkazy povoleny, ale každý vyžaduje potvrzení
+      ask: "always",
     },
     deny: [
-      "group:automation",  // nemůže posílat zprávy za tebe
-      "group:runtime",     // nemůže spouštět kód
-      "group:fs",          // nemůže přistupovat k filesystému
-      "gateway",           // nemůže měnit vlastní konfiguraci
-      "cron",              // nemůže zakládat opakující se úlohy
+      "gateway",             // agent nesmí měnit vlastní konfiguraci
+      "cron",                // agent nesmí zakládat opakující se úlohy na pozadí
     ],
+    // group:runtime, group:fs, group:automation jsou povoleny —
+    // VM je izolované prostředí, blast radius je omezen na VM
     fs: {
-      workspaceOnly: true, // pokud fs povolíš, jen vymezený adresář
+      workspaceOnly: false,  // přístup k celému filesystému VM
     },
     elevated: {
-      enabled: false,      // žádná elevated oprávnění
+      enabled: false,        // žádná elevated oprávnění (sudo apod.)
     },
   },
 
