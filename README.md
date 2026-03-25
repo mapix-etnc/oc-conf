@@ -136,6 +136,21 @@ Toto je nejdůležitější krok. Otevři config:
 openclaw configure
 ```
 
+#### Přehled: instalace v lokálním systému vs. dedikované VM
+
+| Nastavení | Lokální systém | Dedikované VM |
+|-----------|-------------|---------------|
+| `exec.security` | `deny` | `ask` |
+| `group:fs` | deny | povoleno |
+| `fs.workspaceOnly` | `true` | `false` |
+| `group:runtime` | deny | povoleno |
+| `group:automation` | deny | povoleno |
+| `gateway` | **vždy deny** | **vždy deny** |
+| `cron` | deny (doporučeno) | povoleno |
+| `elevated` | **vždy false** | **vždy false** |
+
+
+
 Nebo uprav soubor přímo — `~/.openclaw/openclaw.json` — a nahraď jeho obsah tímto:
 
 ```json5
@@ -281,19 +296,6 @@ Umožňuje agentovi provádět akce vyžadující vyšší oprávnění (sudo, s
 **Doporučení: vždy `false`.** Ani na dedikovaném VM není důvod dávat agentovi sudo přístup.
 
 ---
-
-#### Přehled: denní driver vs. dedikované VM
-
-| Nastavení | Daily driver | Dedikované VM |
-|-----------|-------------|---------------|
-| `exec.security` | `deny` | `ask` |
-| `group:fs` | deny | povoleno |
-| `fs.workspaceOnly` | `true` | `false` |
-| `group:runtime` | deny | povoleno |
-| `group:automation` | deny | povoleno |
-| `gateway` | **vždy deny** | **vždy deny** |
-| `cron` | deny (doporučeno) | povoleno |
-| `elevated` | **vždy false** | **vždy false** |
 
 ### Vygeneruj token
 
