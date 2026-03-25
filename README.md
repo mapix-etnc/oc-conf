@@ -20,7 +20,7 @@ Po installfest budeš mít:
 - Hardened konfiguraci (nikdo cizí se nedostane)
 - Funkční dashboard v browseru
 
-Po domácím úkolu (Kroky 4+5) navíc:
+Po domácím úkolu (Kroky 6+7) navíc:
 - Přístup z mobilu přes Telegram
 - Bezpečný vzdálený přístup přes Tailscale
 
@@ -173,10 +173,10 @@ Nebo uprav soubor přímo — `~/.openclaw/openclaw.json` — a nahraď jeho obs
   },
 
   channels: {
-    telegram: {
-      dmPolicy: "pairing", // neznámí = dostanou pairing kód, ne přímý přístup
-      // Tuto sekci přidej až po splnění domácího úkolu (Krok 6)
-    },
+    // Telegram sekci přidej až po splnění domácího úkolu (Krok 7)
+    // telegram: {
+    //   dmPolicy: "pairing",
+    // },
   },
 }
 ```
@@ -292,7 +292,7 @@ Umožňuje agentovi provádět akce vyžadující vyšší oprávnění (sudo, s
 | `group:runtime` | deny | povoleno |
 | `group:automation` | deny | povoleno |
 | `gateway` | **vždy deny** | **vždy deny** |
-| `cron` | **vždy deny** | povoleno |
+| `cron` | deny (doporučeno) | povoleno |
 | `elevated` | **vždy false** | **vždy false** |
 
 ### Vygeneruj token
@@ -462,6 +462,8 @@ openclaw pairing approve telegram <KOD>
 ```
 
 Teď pošli botu zprávu znovu — měl by odpovědět.
+
+---
 
 ## Troubleshooting
 
