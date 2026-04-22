@@ -106,7 +106,7 @@ Průvodce se tě postupně zeptá na:
 
 1. **Model provider** — vyber Anthropic (Claude) nebo OpenAI (GPT)
 2. **API klíč** — vlož klíč, který sis připravil
-3. **Gateway token** — průvodce vygeneruje automaticky, jen potvrď
+3. **Gateway token** — průvodce vygeneruje automaticky a uloží do `openclaw.json`, jen potvrď
 4. **Daemon install** — potvrď, nainstaluje Gateway jako službu
 
 Po dokončení ověř, že Gateway běží:
@@ -163,7 +163,7 @@ Nebo uprav soubor přímo — `~/.openclaw/openclaw.json` — a nahraď jeho obs
     bind: "loopback",        // poslouchá POUZE na 127.0.0.1
     auth: {
       mode: "token",
-      token: "VLOZ_SEM_SVUJ_TOKEN"  // viz níže jak vygenerovat
+      token: "VLOZ_SEM_SVUJ_TOKEN"  // viz sekce "Vygeneruj token" níže
     },
   },
 
@@ -179,8 +179,8 @@ Nebo uprav soubor přímo — `~/.openclaw/openclaw.json` — a nahraď jeho obs
     deny: [
       "gateway",             // agent nesmí měnit vlastní konfiguraci
     ],
-    // group:runtime, group:fs, group:automation jsou povoleny —
-    // VM je izolované prostředí, blast radius je omezen na VM
+    // group:runtime, group:fs, group:automation jsou povoleny jako výchozí hodnota —
+    // není potřeba je uvádět. VM je izolované prostředí, blast radius je omezen na VM.
     fs: {
       workspaceOnly: false,  // přístup k celému filesystému VM
     },
@@ -196,6 +196,28 @@ Nebo uprav soubor přímo — `~/.openclaw/openclaw.json` — a nahraď jeho obs
     // },
   },
 }
+```
+
+### Vygeneruj token
+
+Token se generuje automaticky během `openclaw onboard` a uloží se přímo do `openclaw.json` — pokud jsi prošel onboardingem, placeholder `VLOZ_SEM_SVUJ_TOKEN` je již nahrazen.
+
+Pokud editoval konfiguraci ručně nebo potřebuješ nový token:
+
+```bash
+openclaw onboard --only=gateway-token
+```
+
+Nebo ho vlož ručně — vymysli si silný náhodný řetězec (min. 32 znaků), případně:
+
+```bash
+openssl rand -hex 32
+```
+
+Zkopíruj výstup a vlož místo `VLOZ_SEM_SVUJ_TOKEN` v configu. Poté spusť:
+
+```bash
+openclaw secrets reload
 ```
 
 ### Co jednotlivé volby znamenají — rozhodni se sám
@@ -299,26 +321,6 @@ Umožňuje agentovi provádět akce vyžadující vyšší oprávnění (sudo, s
 
 ---
 
-### Vygeneruj token
-
-Token se generuje automaticky během `openclaw onboard`. Pokud potřebuješ nový token dodatečně:
-
-```bash
-openclaw onboard --only=gateway-token
-```
-
-Nebo ho vlož ručně — vymysli si silný náhodný řetězec (min. 32 znaků), případně:
-
-```bash
-openssl rand -hex 32
-```
-
-Zkopíruj výstup a vlož místo `VLOZ_SEM_SVUJ_TOKEN` v configu. Poté spusť:
-
-```bash
-openclaw secrets reload
-```
-
 ### Oprávnění souborů (Linux / macOS)
 
 ```bash
@@ -409,11 +411,14 @@ Měl bys vidět svůj stroj i mobil v seznamu zařízení.
 
 ### 6d) Tailscale Serve — zpřístupni Gateway přes tailnet
 
-OpenClaw má nativní Tailscale integraci — nastav ji přímo v `openclaw.json`:
+OpenClaw má nativní Tailscale integraci. Přidej klíč `tailscale` do existujícího `gateway` bloku v `~/.openclaw/openclaw.json` (ten samý blok co jsi nastavil v Kroku 4):
 
 ```json5
 gateway: {
-  tailscale: { mode: "serve", resetOnExit: false },
+  mode: "local",
+  bind: "loopback",
+  auth: { ... },             // ponech stávající nastavení
+  tailscale: { mode: "serve", resetOnExit: false },  // ← přidej tento řádek
 },
 ```
 
@@ -423,13 +428,13 @@ Pak restartuj Gateway:
 openclaw restart
 ```
 
-Tím OpenClaw sám nastaví `tailscale serve` pro port 18789 — Gateway bude dostupná jen zařízením ve tvém tailnetu, ne veřejnému internetu.
+Tím OpenClaw sám nastaví Tailscale Serve pro port 18789 — Gateway bude dostupná jen zařízením ve tvém tailnetu, ne veřejnému internetu.
 
-> **Alternativa (manuálně):** Pokud nechceš upravovat config, můžeš spustit:
+> **Alternativa (pokročilé / bez úpravy configu):** Tailscale Serve lze nastavit i ručně z příkazové řádky:
 > ```bash
 > tailscale serve --bg http://localhost:18789
 > ```
-> Pozor: `tailscale serve 18789` (starý formát) nefunguje v novějších verzích Tailscale CLI.
+> `--bg` zajistí, že příkaz běží na pozadí. Pozor: starší formát `tailscale serve 18789` (bez `http://`) nefunguje v novějších verzích Tailscale CLI.
 
 ### Rizika vzdáleného přístupu
 
@@ -520,7 +525,7 @@ Pusť `openclaw security audit --fix` — většinu věcí opraví automaticky.
 Pro manuální opravy: audit vypíše přesný klíč v configu, který je potřeba změnit.
 
 ### Windows: Gateway se chová divně
-Přejdi na WSL2 — je stabilnější. Průvodce: docs.microsoft.com/windows/wsl/install
+Přejdi na WSL2 — je stabilnější. Průvodce: [docs.microsoft.com/windows/wsl/install](https://docs.microsoft.com/windows/wsl/install)
 
 ---
 
