@@ -1,6 +1,6 @@
 # OpenClaw Installfest — Step-by-Step průvodce
 
-> Verze: 2026-03-25  
+> Verze: 2026-04-22  
 > Čas: ~45–60 minut  
 > Platformy: Linux · macOS · Windows (WSL2)
 
@@ -51,7 +51,7 @@ Pokud přesto instaluješ na hlavní systém: používej přísnější konfigur
 Před příchodem si připrav:
 
 - [ ] **API klíč** od Anthropic (claude.ai/settings) nebo OpenAI (platform.openai.com)
-- [ ] **Node.js** — zkontroluj: `node --version` (potřebuješ 22.16+ nebo 24)
+- [ ] **Node.js** — zkontroluj: `node --version` (potřebuješ 20+, doporučeno 24)
 
 > Pro domácí úkol (Kroky 6+7) budeš potřebovat navíc: Telegram účet na mobilu a Tailscale účet (tailscale.com — zdarma).
 
@@ -70,13 +70,15 @@ brew install node@24
 
 **Windows:** Stáhni instalátor z nodejs.org (verze 24 LTS)
 
+> Node.js 20 a 22 LTS jsou také podporovány — verze 24 je doporučená pro nejlepší výkon.
+
 ---
 
 ## KROK 1 — Instalace OpenClaw
 
 ### Linux / macOS
 ```bash
-curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL https://openclaw.ai/install | bash
 ```
 
 Po dokončení restartuj terminál (nebo spusť `source ~/.bashrc`), pak ověř:
@@ -299,11 +301,23 @@ Umožňuje agentovi provádět akce vyžadující vyšší oprávnění (sudo, s
 
 ### Vygeneruj token
 
+Token se generuje automaticky během `openclaw onboard`. Pokud potřebuješ nový token dodatečně:
+
 ```bash
-openclaw doctor --generate-gateway-token
+openclaw onboard --only=gateway-token
 ```
 
-Zkopíruj výstup a vlož místo `VLOZ_SEM_SVUJ_TOKEN` v configu.
+Nebo ho vlož ručně — vymysli si silný náhodný řetězec (min. 32 znaků), případně:
+
+```bash
+openssl rand -hex 32
+```
+
+Zkopíruj výstup a vlož místo `VLOZ_SEM_SVUJ_TOKEN` v configu. Poté spusť:
+
+```bash
+openclaw secrets reload
+```
 
 ### Oprávnění souborů (Linux / macOS)
 
@@ -395,11 +409,27 @@ Měl bys vidět svůj stroj i mobil v seznamu zařízení.
 
 ### 6d) Tailscale Serve — zpřístupni Gateway přes tailnet
 
-```bash
-tailscale serve 18789
+OpenClaw má nativní Tailscale integraci — nastav ji přímo v `openclaw.json`:
+
+```json5
+gateway: {
+  tailscale: { mode: "serve", resetOnExit: false },
+},
 ```
 
-Tím Gateway zpřístupníš jen zařízením ve tvém tailnetu — ne veřejnému internetu.
+Pak restartuj Gateway:
+
+```bash
+openclaw restart
+```
+
+Tím OpenClaw sám nastaví `tailscale serve` pro port 18789 — Gateway bude dostupná jen zařízením ve tvém tailnetu, ne veřejnému internetu.
+
+> **Alternativa (manuálně):** Pokud nechceš upravovat config, můžeš spustit:
+> ```bash
+> tailscale serve --bg http://localhost:18789
+> ```
+> Pozor: `tailscale serve 18789` (starý formát) nefunguje v novějších verzích Tailscale CLI.
 
 ### Rizika vzdáleného přístupu
 
